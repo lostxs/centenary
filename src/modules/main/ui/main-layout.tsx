@@ -1,8 +1,9 @@
 "use client";
 
-import { PropsWithChildren, useEffect, useState } from "react";
+import type { PropsWithChildren } from "react";
+import { useEffect, useState } from "react";
 
-import { auth } from "~/shared/lib/auth/server";
+import type { auth } from "~/shared/lib/auth/server";
 import { SidebarProvider } from "~/shared/ui/sidebar";
 import { MainGuide } from "./guide";
 import { MainNavBar } from "./nav-bar";

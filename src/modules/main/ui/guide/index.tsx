@@ -51,7 +51,7 @@ function MainGuideSection() {
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton asChild isActive={false} onClick={() => {}}>
+              <SidebarMenuButton asChild isActive={false}>
                 <Link href={item.href} className="gap-4">
                   <item.icon />
                   <span>{item.title}</span>
@@ -75,7 +75,6 @@ function MainGuidePlaylistsSection() {
           <SidebarMenuItem>
             <SidebarMenuButton
               isActive={false}
-              onClick={() => {}}
               className="bg-sidebar-accent/50 gap-4 rounded-full"
             >
               <PlusIcon />

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LogOutIcon, UserIcon } from "lucide-react";
 
-import { auth, User } from "~/shared/lib/auth/server";
+import type { auth, User } from "~/shared/lib/auth/server";
 import { cn } from "~/shared/lib/utils";
 import { buttonVariants } from "~/shared/ui/button";
 import {
