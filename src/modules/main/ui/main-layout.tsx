@@ -4,6 +4,8 @@ import type { PropsWithChildren } from "react";
 import { useEffect, useState } from "react";
 
 import type { auth } from "~/shared/lib/auth/server";
+import { Modals } from "~/app/_modals";
+import { ModalStoreProvider } from "~/app/_providers";
 import { SidebarProvider } from "~/shared/ui/sidebar";
 import { MainGuide } from "./guide";
 import { MainNavBar } from "./nav-bar";
@@ -29,21 +31,24 @@ export function MainLayout({
   }, []);
 
   return (
-    <SidebarProvider
-      defaultOpen={defaultOpen}
-      data-content-scrolled={hasScrolled}
-      style={
-        {
-          "--nav-bar-height": "4rem",
-          "--content-max-width": "1920px",
-          "--content-spacing": "calc(var(--spacing) * 4)",
-        } as React.CSSProperties
-      }
-    >
-      <MainNavBar session={session} />
-      <MainGuide />
-      <MainLayoutContent>{children}</MainLayoutContent>
-    </SidebarProvider>
+    <ModalStoreProvider>
+      <SidebarProvider
+        defaultOpen={defaultOpen}
+        data-content-scrolled={hasScrolled}
+        style={
+          {
+            "--nav-bar-height": "4rem",
+            "--content-max-width": "1920px",
+            "--content-spacing": "calc(var(--spacing) * 4)",
+          } as React.CSSProperties
+        }
+      >
+        <MainNavBar session={session} />
+        <MainGuide />
+        <MainLayoutContent>{children}</MainLayoutContent>
+      </SidebarProvider>
+      <Modals />
+    </ModalStoreProvider>
   );
 }
 

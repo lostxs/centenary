@@ -2,15 +2,20 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { LogOutIcon, UserIcon } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { cva } from "class-variance-authority";
+import { LogOutIcon, UploadIcon, UserIcon } from "lucide-react";
 
 import type { auth, User } from "~/shared/lib/auth/server";
+import { useModalStore } from "~/app/_providers";
+import { useTRPC } from "~/shared/lib/trpc/client";
 import { cn } from "~/shared/lib/utils";
 import { buttonVariants } from "~/shared/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/shared/ui/dropdown-menu";
 import { SidebarTrigger } from "~/shared/ui/sidebar";
@@ -76,27 +81,96 @@ export function MainNavBar({
 }
 
 export function UserButton({ user }: { user: User }) {
+  const trpc = useTRPC();
+  const modalStore = useModalStore((state) => state);
+
+  const { mutate: createUpload } = useMutation(
+    trpc.tracks.createUpload.mutationOptions({
+      onSuccess: (data) => {
+        modalStore.setData({
+          uploadId: data.uploadId,
+          uploadUrl: data.uploadUrl,
+        });
+        modalStore.setIsLoading(false);
+      },
+      onError: (error) => {
+        console.error(error);
+        modalStore.setIsLoading(false);
+      },
+    }),
+  );
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="relative size-8">
-        {user.image ? (
-          <Image
-            src={user.image}
-            alt={user.name}
-            fill
-            sizes="100%"
-            className="rounded-full"
-          />
-        ) : (
-          <UserIcon className="size-8" />
-        )}
+      <DropdownMenuTrigger>
+        <UserAvatar user={user} size="sm" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem>
-          <LogOutIcon className="mr-2 size-4" />
+      <DropdownMenuContent align="end" className="w-64 px-0 py-1">
+        <div className="flex items-center gap-4 p-4">
+          <UserAvatar user={user} size="md" />
+          <div className="flex flex-col">
+            <p className="font-medium">{user.name}</p>
+            <p className="text-muted-foreground text-sm">{user.email}</p>
+          </div>
+        </div>
+        <DropdownMenuItem
+          className="gap-4 rounded-none px-4"
+          onClick={() => {
+            modalStore.open("upload-track");
+            modalStore.setIsLoading(true);
+            createUpload(undefined);
+          }}
+        >
+          <UploadIcon className="size-6" />
+          Upload Track
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="gap-4 rounded-none px-4">
+          <LogOutIcon className="size-6" />
           Logout
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+const avatarSizes = cva("relative overflow-hidden rounded-full", {
+  variants: {
+    size: {
+      sm: "size-8",
+      md: "size-10",
+      lg: "size-12",
+    },
+  },
+  defaultVariants: {
+    size: "sm",
+  },
+});
+
+interface UserAvatarProps extends React.ComponentProps<"div"> {
+  user: User;
+  size?: "sm" | "md" | "lg";
+}
+
+function UserAvatar({
+  user,
+  size = "sm",
+  className,
+  ...props
+}: UserAvatarProps) {
+  return (
+    <div className={cn(avatarSizes({ size }), className)} {...props}>
+      {user.image ? (
+        <Image
+          src={user.image}
+          alt={user.name}
+          fill
+          sizes="100%"
+          className="rounded-full object-cover object-center"
+        />
+      ) : (
+        <UserIcon className={avatarSizes({ size })} />
+      )}
+    </div>
   );
 }

@@ -9,7 +9,10 @@ export const createContext = async (opts: { headers: Headers }) => {
   return {
     db,
     redis,
-    session,
+    session: {
+      ...session?.session,
+      user: session?.user,
+    },
     ...opts,
   };
 };

@@ -1,3 +1,4 @@
+import { tracksRouter } from "~/modules/track/procedures/server";
 import { createCallerFactory, publicProcedure, router } from "../trpc";
 
 export const appRouter = router({
@@ -6,6 +7,7 @@ export const appRouter = router({
       status: "ok",
     };
   }),
+  tracks: tracksRouter,
 });
 
 export const createCaller = createCallerFactory(appRouter);
