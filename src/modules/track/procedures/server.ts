@@ -16,7 +16,7 @@ export const tracksRouter = router({
         playback_policy: ["public"],
         static_renditions: [
           {
-            resolution: "audio-only",
+            resolution: "highest",
           },
         ],
       },
