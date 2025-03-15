@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
 import { useModalStore } from "~/app/_providers";
@@ -12,10 +12,16 @@ export function UploadTrackModal() {
   const modalStore = useModalStore((state) => state);
   const trpc = useTRPC();
   const isModalOpen = modalStore.type === "upload-track" && modalStore.isOpen;
-  const { uploadUrl, uploadId } = modalStore.data as {
-    uploadUrl: string;
-    uploadId: string;
-  };
+
+  const {
+    data: upload,
+    isLoading: isUploadLoading,
+    isFetching,
+  } = useQuery(
+    trpc.tracks.getUpload.queryOptions(undefined, {
+      enabled: isModalOpen,
+    }),
+  );
 
   const { mutate: createTrack, reset: resetCreateTrack } = useMutation(
     trpc.tracks.create.mutationOptions({
@@ -34,20 +40,24 @@ export function UploadTrackModal() {
       open={isModalOpen}
       onOpenChange={() => modalStore.close()}
     >
-      {modalStore.isLoading ? (
+      {isUploadLoading || isFetching ? (
         <div className="flex h-full items-center justify-center">
           <Loader2 className="size-6 animate-spin" />
         </div>
-      ) : (
+      ) : upload ? (
         <TrackUploader
-          endpoint={uploadUrl}
+          endpoint={upload.uploadUrl}
           onSuccess={() => {
             createTrack({
-              uploadId,
+              uploadId: upload.uploadId,
             });
           }}
           onError={() => resetCreateTrack()}
         />
+      ) : (
+        <div className="flex h-full items-center justify-center">
+          <p>No upload found</p>
+        </div>
       )}
     </ResponsiveModal>
   );

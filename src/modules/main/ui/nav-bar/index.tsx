@@ -2,13 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMutation } from "@tanstack/react-query";
 import { cva } from "class-variance-authority";
 import { LogOutIcon, UploadIcon, UserIcon } from "lucide-react";
 
 import type { auth, User } from "~/shared/lib/auth/server";
 import { useModalStore } from "~/app/_providers";
-import { useTRPC } from "~/shared/lib/trpc/client";
 import { cn } from "~/shared/lib/utils";
 import { buttonVariants } from "~/shared/ui/button";
 import {
@@ -81,24 +79,7 @@ export function MainNavBar({
 }
 
 export function UserButton({ user }: { user: User }) {
-  const trpc = useTRPC();
   const modalStore = useModalStore((state) => state);
-
-  const { mutate: createUpload } = useMutation(
-    trpc.tracks.createUpload.mutationOptions({
-      onSuccess: (data) => {
-        modalStore.setData({
-          uploadId: data.uploadId,
-          uploadUrl: data.uploadUrl,
-        });
-        modalStore.setIsLoading(false);
-      },
-      onError: (error) => {
-        console.error(error);
-        modalStore.setIsLoading(false);
-      },
-    }),
-  );
 
   return (
     <DropdownMenu>
@@ -115,11 +96,7 @@ export function UserButton({ user }: { user: User }) {
         </div>
         <DropdownMenuItem
           className="gap-4 rounded-none px-4"
-          onClick={() => {
-            modalStore.open("upload-track");
-            modalStore.setIsLoading(true);
-            createUpload(undefined);
-          }}
+          onClick={() => modalStore.open("upload-track")}
         >
           <UploadIcon className="size-6" />
           Upload Track
