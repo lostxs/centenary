@@ -13,12 +13,8 @@ export function UploadTrackModal() {
   const trpc = useTRPC();
   const isModalOpen = modalStore.type === "upload-track" && modalStore.isOpen;
 
-  const {
-    data: upload,
-    isLoading: isUploadLoading,
-    isFetching,
-  } = useQuery(
-    trpc.tracks.getUpload.queryOptions(undefined, {
+  const { data: upload, isLoading: isUploadLoading } = useQuery(
+    trpc.tracks.createUpload.queryOptions(undefined, {
       enabled: isModalOpen,
     }),
   );
@@ -40,24 +36,22 @@ export function UploadTrackModal() {
       open={isModalOpen}
       onOpenChange={() => modalStore.close()}
     >
-      {isUploadLoading || isFetching ? (
+      {isUploadLoading ? (
         <div className="flex h-full items-center justify-center">
           <Loader2 className="size-6 animate-spin" />
         </div>
-      ) : upload ? (
-        <TrackUploader
-          endpoint={upload.uploadUrl}
-          onSuccess={() => {
-            createTrack({
-              uploadId: upload.uploadId,
-            });
-          }}
-          onError={() => resetCreateTrack()}
-        />
       ) : (
-        <div className="flex h-full items-center justify-center">
-          <p>No upload found</p>
-        </div>
+        upload && (
+          <TrackUploader
+            endpoint={upload.url}
+            onSuccess={() => {
+              createTrack({
+                uploadId: upload.id,
+              });
+            }}
+            onError={() => resetCreateTrack()}
+          />
+        )
       )}
     </ResponsiveModal>
   );
