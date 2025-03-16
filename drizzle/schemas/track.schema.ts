@@ -1,5 +1,11 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 import { users_table } from "./auth.schema";
 
@@ -9,14 +15,12 @@ export const tracks_table = pgTable("tracks", {
     .notNull()
     .references(() => users_table.id, { onDelete: "cascade" }),
   muxStatus: text("mux_status").$type<MuxStatus>().notNull(),
-  muxTrackStatus: text("mux_track_status"),
-  muxTrackId: text("mux_track_id").unique(),
   muxAssetId: text("mux_asset_id").unique(),
   muxUploadId: text("mux_upload_id").unique(),
   muxPlaybackId: text("mux_playback_id").unique(),
 
   title: varchar("title", { length: 255 }).notNull(),
-  thumbnail: text("thumbnail"),
+  duration: integer("duration").notNull().default(0),
 
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
@@ -26,11 +30,14 @@ export const tracks_table = pgTable("tracks", {
   ),
 });
 
+export type Track = typeof tracks_table.$inferSelect;
+
 const MuxStatus = {
   WAITING: "waiting",
   PREPARING: "preparing",
   READY: "ready",
   ERRORED: "errored",
+  DELETED: "deleted",
 } as const;
 
 export type MuxStatus = (typeof MuxStatus)[keyof typeof MuxStatus];

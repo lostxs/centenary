@@ -21,11 +21,9 @@ export const createCallerFactory = trpc.createCallerFactory;
 
 export const publicProcedure = trpc.procedure;
 export const protectedProcedure = trpc.procedure.use(({ ctx, next }) => {
-  if (!ctx.session.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: "Unauthorized" });
+  if (!ctx.session?.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
   }
-
-  console.log(ctx.session.user);
 
   return next({
     ctx: {

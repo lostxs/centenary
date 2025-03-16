@@ -1,8 +1,8 @@
 import type {
   VideoAssetCreatedWebhookEvent,
+  VideoAssetDeletedWebhookEvent,
   VideoAssetErroredWebhookEvent,
   VideoAssetReadyWebhookEvent,
-  VideoAssetTrackReadyWebhookEvent,
 } from "@mux/mux-node/resources/webhooks.mjs";
 import type { NextRequest } from "next/server";
 import { headers as nextHeaders } from "next/headers";
@@ -20,7 +20,7 @@ type WebhookEvent =
   | VideoAssetCreatedWebhookEvent
   | VideoAssetReadyWebhookEvent
   | VideoAssetErroredWebhookEvent
-  | VideoAssetTrackReadyWebhookEvent;
+  | VideoAssetDeletedWebhookEvent;
 
 export const POST = async (request: NextRequest) => {
   const headers = await nextHeaders();
@@ -66,7 +66,7 @@ export const POST = async (request: NextRequest) => {
         return new NextResponse("Missing playback_id", { status: 400 });
       }
 
-      const thumbnail = `https://image.mux.com/${playbackId}/thumbnail.jpg`;
+      const duration = data.duration ? Math.round(data.duration * 1000) : 0;
 
       await db
         .update(tracks_table)
@@ -74,8 +74,31 @@ export const POST = async (request: NextRequest) => {
           muxStatus: data.status,
           muxPlaybackId: playbackId,
           muxAssetId: data.id,
-          thumbnail,
+          duration,
         })
+        .where(eq(tracks_table.muxUploadId, data.upload_id));
+      break;
+    }
+    case "video.asset.errored": {
+      const data = payload.data;
+      if (!data.upload_id) {
+        return new NextResponse("Missing upload_id", { status: 400 });
+      }
+
+      await db
+        .update(tracks_table)
+        .set({ muxStatus: data.status })
+        .where(eq(tracks_table.muxUploadId, data.upload_id));
+      break;
+    }
+    case "video.asset.deleted": {
+      const data = payload.data;
+      if (!data.upload_id) {
+        return new NextResponse("Missing upload_id", { status: 400 });
+      }
+
+      await db
+        .delete(tracks_table)
         .where(eq(tracks_table.muxUploadId, data.upload_id));
       break;
     }

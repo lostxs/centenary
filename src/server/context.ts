@@ -1,5 +1,5 @@
 import { auth } from "~/shared/lib/auth/server";
-import { db, redis } from "~/shared/lib/db";
+import { db } from "~/shared/lib/db";
 
 export const createContext = async (opts: { headers: Headers }) => {
   const session = await auth.api.getSession({
@@ -8,11 +8,7 @@ export const createContext = async (opts: { headers: Headers }) => {
 
   return {
     db,
-    redis,
-    session: {
-      ...session?.session,
-      user: session?.user,
-    },
+    session,
     ...opts,
   };
 };

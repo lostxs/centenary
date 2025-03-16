@@ -1,3 +1,4 @@
+import { libraryRouter } from "~/modules/library/procedures/server";
 import { tracksRouter } from "~/modules/track/procedures/server";
 import { createCallerFactory, publicProcedure, router } from "../trpc";
 
@@ -8,6 +9,7 @@ export const appRouter = router({
     };
   }),
   tracks: tracksRouter,
+  library: libraryRouter,
 });
 
 export const createCaller = createCallerFactory(appRouter);
